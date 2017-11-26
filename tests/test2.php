@@ -1,6 +1,6 @@
 
 <?php
-require_once "Net/Whois.php";
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $server = "whois.denic.de";
 $query  = "phpcrawler.de";     // get information about
@@ -8,5 +8,3 @@ $query  = "phpcrawler.de";     // get information about
 $whois = new Net_Whois;
 $data = $whois->query($query, $server);
 echo $data;
-?>
-

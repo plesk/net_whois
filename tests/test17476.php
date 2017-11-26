@@ -13,16 +13,12 @@
  * @link     test17476.php
  * @todo
 */
+require_once __DIR__ . '/../vendor/autoload.php';
 
-
-
-?>
-<?php
 $q=isset($_REQUEST['q'])?htmlspecialchars($_REQUEST['q']):NULL;
 $s=isset($_REQUEST['s'])?htmlspecialchars($_REQUEST['s']):NULL;
 $q = 'test.com';
 if (strchr($q,'.')) {
-    require_once "Net/Whois.php";
     $whois = new Net_Whois;
     $q=strtolower($q);
     if (!$s && $q[0] == '.') {
@@ -38,4 +34,3 @@ if (strchr($q,'.')) {
     $data=htmlspecialchars($whois->query($q,$s));
     echo "<pre>$data</pre>";
 }
-?>

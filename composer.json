@@ -26,9 +26,7 @@
     "type": "library",
     "require": {
         "pear/pear_exception": "*",
-        "pear/net_socket": "*"
-    },
-    "require-dev": {
-        "phpunit/phpunit": "*"
+        "pear/net_socket": "*",
+        "pear/pear-core-minimal": "1.10.3"
     }
 }
