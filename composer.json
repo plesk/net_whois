@@ -1,4 +1,5 @@
 {
+    "name": "plesk/net_whois",
     "authors": [
         {
             "email": "svenasse@gmail.com",
@@ -11,22 +12,25 @@
             "role": "Lead"
         }
     ],
+    "config": {
+        "prepend-autoloader": false,
+        "optimize-autoloader": true
+    },
     "autoload": {
         "psr-0": {
             "Net_": "src/"
         }
     },
     "description": "More info available on: http://pear.php.net/package/Net_Whois",
-    "license": "PHP",
-    "name": "pear/net_whois",
+    "license": "PHP-3.01",
     "support": {
         "issues": "http://pear.php.net/bugs/search.php?cmd=display&package_name[]=Net_Whois",
         "source": "https://github.com/pear/Net_Whois"
     },
     "type": "library",
     "require": {
-        "pear/pear_exception": "*",
-        "pear/net_socket": "*",
-        "pear/pear-core-minimal": "1.10.3"
+        "pear/pear_exception": "^1.0.0",
+        "pear/net_socket": "^1.2.1",
+        "pear/pear-core-minimal": "^1.10.3"
     }
 }
