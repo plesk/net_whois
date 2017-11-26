@@ -27,9 +27,5 @@
         "issues": "http://pear.php.net/bugs/search.php?cmd=display&package_name[]=Net_Whois",
         "source": "https://github.com/pear/Net_Whois"
     },
-    "type": "library",
-    "require": {
-        "pear/pear_exception": "^1.0.0",
-        "pear/pear-core-minimal": "^1.10.3"
-    }
+    "type": "library"
 }

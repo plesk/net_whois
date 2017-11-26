@@ -26,8 +26,6 @@
  * @link      http://pear.php.net/package/Net_Whois
  */
 
-require_once 'PEAR.php';
-
 /**
  * Looks up records in the databases maintained by several Network Information
  * Centres (NICs).  This class uses PEAR's Net_Socket:: class.
@@ -38,7 +36,7 @@ require_once 'PEAR.php';
  * @license  http://www.php.net/license/3_01.txt PHP 3.01
  * @link     http://pear.php.net/package/Net_Whois
  */
-class Net_Whois extends PEAR
+class Net_Whois
 {
 
     // {{{ properties
@@ -104,20 +102,6 @@ class Net_Whois extends PEAR
     var $_ipNicServers = array ('RNICHOST', 'PNICHOST', 'BNICHOST');
 
     /**
-     * List of error codes and text
-     *
-     * @var array
-     * @access private
-     */
-    var $_errorCodes = array (
-        010 => 'Unable to create a socket object',
-        011 => 'Unable to open socket',
-        012 => 'Write to socket failed',
-        013 => 'Read from socket failed',
-        014 => 'Specified server is null or empty',
-    );
-
-    /**
      * Number of seconds to wait on socket connections before assuming
      * there's no more data from the Whois server. Defaults to no timeout.
      * @var integer $timeout
@@ -139,8 +123,6 @@ class Net_Whois extends PEAR
      */
     public function __constructor()
     {
-        $this->PEAR();
-
         $this->setPort();
         $this->setAuthoritative();
         $this->setTimeout();
@@ -270,7 +252,8 @@ class Net_Whois extends PEAR
      * @param string $userWhoisServer server to query (optional)
      *
      * @access public
-     * @return mixed returns a PEAR_Error on failure, or a string on success
+     * @return string
+     * @throws Net_Exception
      */
     function query($domain, $userWhoisServer = null)
     {
@@ -289,10 +272,6 @@ class Net_Whois extends PEAR
 
         $_domain = $this->authoritative ? 'domain ' . $domain : $domain;
         $whoisData = $this->_connect($whoisServer, $_domain);
-
-        if (PEAR::isError($whoisData)) {
-            return $whoisData;
-        }
 
         if ($this->authoritative) {
             $pattern = '/\s+' . preg_quote($this->_whoisServerID) . '(.+?)\n/i';
@@ -314,7 +293,8 @@ class Net_Whois extends PEAR
      * @param string $domain IP address or host name
      *
      * @access public
-     * @return mixed returns a PEAR_Error on failure, or a string on success
+     * @return string
+     * @throws Net_Exception
      */
     function queryAPNIC($domain)
     {
@@ -330,7 +310,8 @@ class Net_Whois extends PEAR
      * @param string $domain IP address or host name
      *
      * @access public
-     * @return mixed returns a PEAR_Error on failure, or a string on success
+     * @return string
+     * @throws Net_Exception
      */
     function queryIPv6($domain)
     {
@@ -347,7 +328,8 @@ class Net_Whois extends PEAR
      * @param string $ipAddress IP address
      *
      * @access public
-     * @return mixed returns a PEAR_Error on failure, or a string on success
+     * @return string
+     * @throws Net_Exception
      */
     function queryRADB($ipAddress)
     {
@@ -419,7 +401,8 @@ class Net_Whois extends PEAR
      * @param string $server FQDN of server to query
      *
      * @access private
-     * @return mixed returns a PEAR_Error on failure, string of data on success
+     * @return string
+     * @throws Net_Exception
      */
     function _socket($query, $server = false)
     {
@@ -427,37 +410,24 @@ class Net_Whois extends PEAR
             $server = $this->_chooseServer($query);
         }
 
-        if (PEAR::isError($socket = new Net_Socket())) {
-            return new PEAR_Error($this->_errorCodes[010], 10);
-        }
-
-        $result = $socket->connect(
+        $socket = new Net_Socket();
+        $socket->connect(
             $server,
             $this->getPort(),
             null,
             $this->getTimeout(),
             $this->getOptions()
         );
-        if (PEAR::isError($result)) {
-            return new PEAR_Error($this->_errorCodes[011], 11);
-        }
         $socket->setBlocking(false);
 
         // Querying denic.de requires some special coaxing for a domain query.
         // http://www.denic.de/en/faq-single/2978/1115.html
         if (substr($query, -3) == '.de') {
-            if (PEAR::isError($socket->writeLine("-T dn,ace " . $query))) {
-                return new PEAR_Error($this->_errorCodes[012], 12);
-            }
+            $socket->writeLine("-T dn,ace " . $query);
         } else {
-            if (PEAR::isError($socket->writeLine($query))) {
-                return new PEAR_Error($this->_errorCodes[012], 12);
-            }
+            $socket->writeLine($query);
         }
         $data = $socket->readAll();
-        if (PEAR::isError($data)) {
-            return new PEAR_Error($this->_errorCodes[013], 13);
-        }
         $this->_log[][$server] = $data;
 
         // this should fail, but we'll call it anyway and ignore the error
@@ -474,12 +444,13 @@ class Net_Whois extends PEAR
      * @param string $domain    Domain name to query
      *
      * @access private
-     * @return mixed returns a PEAR_Error on failure, string of whois data on success
+     * @return string whois data
+     * @throws Net_Exception
      */
     function _connect($nicServer, $domain)
     {
         if (is_null($nicServer) || (empty($nicServer))) {
-            return new PEAR_Error($this->_errorCodes[014], 14);
+            throw new Net_Exception('Specified server is null or empty');
         }
 
         $whoisData = $this->_socket($domain, $nicServer);
@@ -511,11 +482,7 @@ class Net_Whois extends PEAR
         }
 
         if ($nHost && $nHost != $nicServer) {
-            $tmpBuffer = $this->_connect($nHost, $domain);
-            if (PEAR::isError($tmpBuffer)) {
-                return $tmpBuffer;
-            }
-            $whoisData .= $tmpBuffer;
+            $whoisData .= $this->_connect($nHost, $domain);
         }
 
         return $whoisData;

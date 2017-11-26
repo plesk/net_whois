@@ -40,8 +40,6 @@
  * @link      http://pear.php.net/packages/Net_Socket
  */
 
-require_once 'PEAR.php';
-
 define('NET_SOCKET_READ', 1);
 define('NET_SOCKET_WRITE', 2);
 define('NET_SOCKET_ERROR', 4);
@@ -57,7 +55,7 @@ define('NET_SOCKET_ERROR', 4);
  * @license   http://opensource.org/licenses/bsd-license.php BSD-2-Clause
  * @link      http://pear.php.net/packages/Net_Socket
  */
-class Net_Socket extends PEAR
+class Net_Socket
 {
     /**
      * Socket file pointer.
@@ -123,7 +121,8 @@ class Net_Socket extends PEAR
      *
      * @access public
      *
-     * @return boolean|PEAR_Error  True on success or a PEAR_Error on failure.
+     * @return boolean
+     * @throws Net_Exception
      */
     public function connect(
         $addr,
@@ -138,7 +137,7 @@ class Net_Socket extends PEAR
         }
 
         if (!$addr) {
-            return $this->raiseError('$addr cannot be empty');
+            throw new Net_Exception('$addr cannot be empty');
         } else {
             if (strspn($addr, ':.0123456789') === strlen($addr)) {
                 $this->addr = strpos($addr, ':') !== false ? '[' . $addr . ']' : $addr;
@@ -191,7 +190,7 @@ class Net_Socket extends PEAR
             }
             @ini_set('track_errors', $old_track_errors);
 
-            return $this->raiseError($errstr, $errno);
+            throw new Net_Exception("Unable to open socket ({$errno}): {$errstr}");
         }
 
         @ini_set('track_errors', $old_track_errors);
@@ -205,12 +204,13 @@ class Net_Socket extends PEAR
      * Disconnects from the peer, closes the socket.
      *
      * @access public
-     * @return mixed true on success or a PEAR_Error instance otherwise
+     * @return boolean
+     * @throws Net_Exception
      */
     public function disconnect()
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         @fclose($this->fp);
@@ -252,12 +252,13 @@ class Net_Socket extends PEAR
      * @param boolean $mode True for blocking sockets, false for nonblocking.
      *
      * @access public
-     * @return mixed true on success or a PEAR_Error instance otherwise
+     * @return boolean
+     * @throws Net_Exception
      */
     public function setBlocking($mode)
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         $this->blocking = $mode;
@@ -274,13 +275,13 @@ class Net_Socket extends PEAR
      * @param integer $microseconds Microseconds, optional.
      *
      * @access public
-     * @return mixed True on success or false on failure or
-     *               a PEAR_Error instance when not connected
+     * @return boolean
+     * @throws Net_Exception when not connected
      */
     public function setTimeout($seconds = null, $microseconds = null)
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         if ($seconds === null && $microseconds === null) {
@@ -304,12 +305,13 @@ class Net_Socket extends PEAR
      * @param integer $size Write buffer size.
      *
      * @access public
-     * @return mixed on success or an PEAR_Error object otherwise
+     * @return boolean
+     * @throws Net_Exception
      */
     public function setWriteBuffer($size)
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         $returned = stream_set_write_buffer($this->fp, $size);
@@ -317,7 +319,7 @@ class Net_Socket extends PEAR
             return true;
         }
 
-        return $this->raiseError('Cannot set write buffer.');
+        throw new Net_Exception('Cannot set write buffer.');
     }
 
     /**
@@ -332,13 +334,13 @@ class Net_Socket extends PEAR
      * </p>
      *
      * @access public
-     * @return mixed Array containing information about existing socket
-     *               resource or a PEAR_Error instance otherwise
+     * @return array Array containing information about existing socket resource
+     * @throws Net_Exception
      */
     public function getStatus()
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         return stream_get_meta_data($this->fp);
@@ -353,13 +355,13 @@ class Net_Socket extends PEAR
      *                  the stream until it reaches the end of the line.
      *
      * @access public
-     * @return mixed $size bytes of data from the socket, or a PEAR_Error if
-     *         not connected. If an error occurs, FALSE is returned.
+     * @return string $size bytes of data from the socket
+     * @throws Net_Exception if not connected
      */
     public function gets($size = null)
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         if (null === $size) {
@@ -378,13 +380,13 @@ class Net_Socket extends PEAR
      * @param integer $size The number of bytes to read from the socket.
      *
      * @access public
-     * @return string $size bytes of data from the socket, or a PEAR_Error if
-     *         not connected.
+     * @return string $size bytes of data from the socket
+     * @throws Net_Exception if not connected
      */
     public function read($size)
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         return @fread($this->fp, $size);
@@ -398,16 +400,13 @@ class Net_Socket extends PEAR
      *                           NULL means all at once.
      *
      * @access public
-     * @return mixed If the socket is not connected, returns an instance of
-     *               PEAR_Error.
-     *               If the write succeeds, returns the number of bytes written.
-     *               If the write fails, returns false.
-     *               If the socket times out, returns an instance of PEAR_Error.
+     * @return int the number of bytes written
+     * @throws Net_Exception if not connected or the socket times out
      */
     public function write($data, $blocksize = null)
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         if (null === $blocksize && !OS_WINDOWS) {
@@ -417,12 +416,8 @@ class Net_Socket extends PEAR
             if ($written === false) {
                 $meta_data = $this->getStatus();
 
-                if (!is_array($meta_data)) {
-                    return $meta_data; // PEAR_Error
-                }
-
                 if (!empty($meta_data['timed_out'])) {
-                    return $this->raiseError('timed out');
+                    throw new Net_Exception('Write to socket failed: timed out');
                 }
             }
 
@@ -441,12 +436,8 @@ class Net_Socket extends PEAR
                 if ($written === false) {
                     $meta_data = $this->getStatus();
 
-                    if (!is_array($meta_data)) {
-                        return $meta_data; // PEAR_Error
-                    }
-
                     if (!empty($meta_data['timed_out'])) {
-                        return $this->raiseError('timed out');
+                        throw new Net_Exception('Write to socket failed: timed out');
                     }
 
                     return $written;
@@ -465,12 +456,13 @@ class Net_Socket extends PEAR
      * @param string $data Data to write
      *
      * @access public
-     * @return mixed fwrite() result, or PEAR_Error when not connected
+     * @return int fwrite() result
+     * @throws Net_Exception if not connected
      */
     public function writeLine($data)
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         return fwrite($this->fp, $data . $this->newline);
@@ -493,13 +485,13 @@ class Net_Socket extends PEAR
      * Reads a byte of data
      *
      * @access public
-     * @return integer 1 byte of data from the socket, or a PEAR_Error if
-     *         not connected.
+     * @return int 1 byte of data from the socket
+     * @throws Net_Exception if not connected
      */
     public function readByte()
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         return ord(@fread($this->fp, 1));
@@ -509,13 +501,13 @@ class Net_Socket extends PEAR
      * Reads a word of data
      *
      * @access public
-     * @return integer 1 word of data from the socket, or a PEAR_Error if
-     *         not connected.
+     * @return int 1 word of data from the socket
+     * @throws Net_Exception if not connected
      */
     public function readWord()
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         $buf = @fread($this->fp, 2);
@@ -527,13 +519,13 @@ class Net_Socket extends PEAR
      * Reads an int of data
      *
      * @access public
-     * @return integer  1 int of data from the socket, or a PEAR_Error if
-     *                  not connected.
+     * @return int 1 int of data from the socket
+     * @throws Net_Exception if not connected
      */
     public function readInt()
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         $buf = @fread($this->fp, 4);
@@ -546,13 +538,13 @@ class Net_Socket extends PEAR
      * Reads a zero-terminated string of data
      *
      * @access public
-     * @return string, or a PEAR_Error if
-     *         not connected.
+     * @return string
+     * @throws Net_Exception if not connected
      */
     public function readString()
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         $string = '';
@@ -567,13 +559,13 @@ class Net_Socket extends PEAR
      * Reads an IP Address and returns it in a dot formatted string
      *
      * @access public
-     * @return string Dot formatted string, or a PEAR_Error if
-     *         not connected.
+     * @return string Dot formatted string
+     * @throws Net_Exception if not connected
      */
     public function readIPAddress()
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         $buf = @fread($this->fp, 4);
@@ -588,13 +580,13 @@ class Net_Socket extends PEAR
      *
      * @access public
      * @return string All available data up to a newline, without that
-     *         newline, or until the end of the socket, or a PEAR_Error if
-     *         not connected.
+     *         newline, or until the end of the socket
+     * @throws Net_Exception if not connected
      */
     public function readLine()
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         $line = '';
@@ -621,13 +613,13 @@ class Net_Socket extends PEAR
      *
      * @access public
      *
-     * @return string  All data until the socket closes, or a PEAR_Error if
-     *                 not connected.
+     * @return string  All data until the socket closes
+     * @throws Net_Exception if not connected
      */
     public function readAll()
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         $data = '';
@@ -649,13 +641,13 @@ class Net_Socket extends PEAR
      * @param integer $tv_usec Number of microseconds for timeout.
      *
      * @access public
-     * @return False if select fails, integer describing which of read/write/error
-     *         are ready, or PEAR_Error if not connected.
+     * @return boolean False if select fails, integer describing which of read/write/error are ready
+     * @throws Net_Exception if not connected
      */
     public function select($state, $tv_sec, $tv_usec = 0)
     {
         if (!is_resource($this->fp)) {
-            return $this->raiseError('not connected');
+            throw new Net_Exception('The socket is not connected');
         }
 
         $read = null;
@@ -702,21 +694,18 @@ class Net_Socket extends PEAR
      * @access public
      * @return false on error, true on success and 0 if there isn't enough data
      *         and the user should try again (non-blocking sockets only).
-     *         A PEAR_Error object is returned if the socket is not
-     *         connected
+     * @throws Net_Exception if not connected
      */
     public function enableCrypto($enabled, $type)
     {
         if (version_compare(phpversion(), '5.1.0', '>=')) {
             if (!is_resource($this->fp)) {
-                return $this->raiseError('not connected');
+                throw new Net_Exception('The socket is not connected');
             }
 
             return @stream_socket_enable_crypto($this->fp, $enabled, $type);
         } else {
-            $msg = 'Net_Socket::enableCrypto() requires php version >= 5.1.0';
-
-            return $this->raiseError($msg);
+            throw new Net_Exception('Net_Socket::enableCrypto() requires php version >= 5.1.0');
         }
     }
 
