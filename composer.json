@@ -12,9 +12,9 @@
         }
     ],
     "autoload": {
-        "classmap": [
-            "./"
-        ]
+        "psr-0": {
+            "Net_": "src/"
+        }
     },
     "description": "More info available on: http://pear.php.net/package/Net_Whois",
     "license": "PHP",
