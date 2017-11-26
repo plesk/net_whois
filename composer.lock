@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "0f7993b604e210fc0d3f7455aba3dbf9",
+    "content-hash": "4240f0e129702bced03ff5844d446c37",
     "packages": [
         {
             "name": "pear/console_getopt",
@@ -52,60 +52,6 @@
             ],
             "description": "More info available on: http://pear.php.net/package/Console_Getopt",
             "time": "2015-07-20T20:28:12+00:00"
-        },
-        {
-            "name": "pear/net_socket",
-            "version": "v1.2.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/pear/Net_Socket.git",
-                "reference": "f31d75ac352d49908f8987bbb1496c02a409812a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/pear/Net_Socket/zipball/f31d75ac352d49908f8987bbb1496c02a409812a",
-                "reference": "f31d75ac352d49908f8987bbb1496c02a409812a",
-                "shasum": ""
-            },
-            "require": {
-                "pear/pear_exception": "@stable",
-                "php": ">=5.4.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^4"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "Net": "./"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "include-path": [
-                "./"
-            ],
-            "license": [
-                "BSD-2-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Chuck Hagenbuch",
-                    "email": "chuck@horde.org",
-                    "role": "Lead"
-                },
-                {
-                    "name": "Aleksander Machniak",
-                    "email": "alec@php.net",
-                    "role": "Lead"
-                },
-                {
-                    "name": "Stig Bakken",
-                    "email": "stig@php.net",
-                    "role": "Lead"
-                }
-            ],
-            "description": "More info available on: http://pear.php.net/package/Net_Socket",
-            "time": "2017-04-06T15:16:38+00:00"
         },
         {
             "name": "pear/pear-core-minimal",

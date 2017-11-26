@@ -30,7 +30,6 @@
     "type": "library",
     "require": {
         "pear/pear_exception": "^1.0.0",
-        "pear/net_socket": "^1.2.1",
         "pear/pear-core-minimal": "^1.10.3"
     }
 }

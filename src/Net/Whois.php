@@ -426,7 +426,6 @@ class Net_Whois extends PEAR
         if (!$server) {
             $server = $this->_chooseServer($query);
         }
-        include_once 'Net/Socket.php';
 
         if (PEAR::isError($socket = new Net_Socket())) {
             return new PEAR_Error($this->_errorCodes[010], 10);
