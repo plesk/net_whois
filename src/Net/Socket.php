@@ -156,8 +156,6 @@ class Net_Socket
         $errno = 0;
         $errstr = '';
 
-        $old_track_errors = @ini_set('track_errors', 1);
-
         if ($timeout <= 0) {
             $timeout = @ini_get('default_socket_timeout');
         }
@@ -185,15 +183,13 @@ class Net_Socket
         }
 
         if (!$fp) {
-            if ($errno === 0 && !strlen($errstr) && isset($php_errormsg)) {
-                $errstr = $php_errormsg;
+            if ($errno === 0 && !strlen($errstr) && ($error = error_get_last())) {
+                $errstr = $error['message'];
             }
-            @ini_set('track_errors', $old_track_errors);
 
             throw new Net_Exception("Unable to open socket ({$errno}): {$errstr}");
         }
 
-        @ini_set('track_errors', $old_track_errors);
         $this->fp = $fp;
         $this->setTimeout();
 
